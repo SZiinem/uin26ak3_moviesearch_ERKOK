@@ -3,10 +3,12 @@ import History from "../components/History"
 
 export default function Home(){
 
+    //useState for å huske hva brukeren skriver i input-feltet (search)
     const [search, setSearch] = useState()
     const storedHistory = localStorage.getItem("search")
     const [focused, setFocused] = useState(false)
 
+    //useState for å huske historikken over tidligere søk
     const [history, setHistory] = useState(storedHistory ? JSON.parse(storedHistory) : [])
 
 
@@ -16,12 +18,16 @@ export default function Home(){
     //henter api-key fra env filen.. den er "hemmelig", så vi kan ikke ha den som klartekst her!
     const apiKey = import.meta.env.VITE_APP_API_KEY
 
+    //denne lagrer historikken i localStorage NÅR verdien i history endrer seg.
+    // uten denne ville ikke react visst når den skulle lagre til localStorage
     useEffect(()=>{
         localStorage.setItem("search", JSON.stringify(history))
     }, [history])
 
+    //async=forteller javascript at denne funksjonen vil ta tid å svare
     const getMovies = async()=>{
         try{
+            //await=forteller js om å stoppe og vente til vi har fått svar fra API-et slik at det ikke kræsjer
             const response = await fetch(`${baseUrl}${apiKey}`)
             const data = await response.json()
             console.log(data)
@@ -31,6 +37,7 @@ export default function Home(){
         }
     }
 
+    //oppdaterer search-variabelen hele tiden slik at vi vet hva brukeren har skrevet i feltet
     const handleChange = (e)=>{
         setSearch(e.target.value)
     }
@@ -41,6 +48,7 @@ export default function Home(){
         //fjerner verdien i boksen etter å ha trykket på søk..
         e.target.reset()
 
+        //tar ordet som ligger i search og dytter det inn i history-arrayet
         setHistory((prev) => [...prev, search])
 
         //lagrer søkene våre lokalt... JSON.stringify lagrer det som array
