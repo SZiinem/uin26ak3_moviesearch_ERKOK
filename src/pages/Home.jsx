@@ -1,41 +1,39 @@
 import { useEffect, useState } from "react"
-import History from "../components/History"
-
+import SearchResults from '../components/SearchResults'
 export default function Home(){
 
     //useState for å huske hva brukeren skriver i input-feltet (search)
     const [search, setSearch] = useState()
-    const storedHistory = localStorage.getItem("search")
-    const [focused, setFocused] = useState(false)
 
-    //useState for å huske historikken over tidligere søk
-    const [history, setHistory] = useState(storedHistory ? JSON.parse(storedHistory) : [])
-
-
-    console.log("Denne kommer fra storage", storedHistory)
+    const [movies, setMovies] = useState([])
 
     const baseUrl = `http://www.omdbapi.com/?s=${search}&apikey=`
     //henter api-key fra env filen.. den er "hemmelig", så vi kan ikke ha den som klartekst her!
     const apiKey = import.meta.env.VITE_APP_API_KEY
 
-    //denne lagrer historikken i localStorage NÅR verdien i history endrer seg.
-    // uten denne ville ikke react visst når den skulle lagre til localStorage
-    useEffect(()=>{
-        localStorage.setItem("search", JSON.stringify(history))
-    }, [history])
 
     //async=forteller javascript at denne funksjonen vil ta tid å svare
-    const getMovies = async()=>{
+    //ved å legge til "james bond" bruker den denne som standard
+    const getMovies = async(title = "James Bond")=>{
         try{
             //await=forteller js om å stoppe og vente til vi har fått svar fra API-et slik at det ikke kræsjer
-            const response = await fetch(`${baseUrl}${apiKey}`)
+            const response = await fetch(`https://www.omdbapi.com/?s=${title}&apikey=${apiKey}`)
             const data = await response.json()
+
+            if (data.Search) {
+                setMovies(data.Search)
+            }
             console.log(data)
         }  
-        catch(err){
+            catch(err){
             console.error(err);
         }
     }
+
+    //denne kjører når siden er klar. tom parantes etter getMovies betyr at den bruker Jamesbond
+    useEffect(() => {
+        getMovies()
+    }, []) //tom liste her: kjører en gang ved oppstart
 
     //oppdaterer search-variabelen hele tiden slik at vi vet hva brukeren har skrevet i feltet
     const handleChange = (e)=>{
@@ -47,13 +45,8 @@ export default function Home(){
         e.preventDefault()
         //fjerner verdien i boksen etter å ha trykket på søk..
         e.target.reset()
-
-        //tar ordet som ligger i search og dytter det inn i history-arrayet
-        setHistory((prev) => [...prev, search])
-
-        //lagrer søkene våre lokalt... JSON.stringify lagrer det som array
+        getMovies(search);
     }
-    console.log(history)
 
     return (
     <main>
@@ -61,17 +54,12 @@ export default function Home(){
         <form onSubmit={handleSubmit}>
             <label>
                 Søk etter film
-                <input type="search" placeholder="Harry Potter" onChange={handleChange} onFocus={() => setFocused(true)} /*onBlur={()=> setFocused(false)}*/></input>
+                <input type="search" placeholder="Harry Potter" onChange={handleChange}></input>
             </label>
 
-            {
-            //lista dukker opp når vi trykker på feltet.. (fokus)
-            focused ? <History history={history} setSearch={setSearch}/> : null
-            }
-
-            <button onClick={getMovies}>Søk</button>
+            <button>Søk</button>
         </form>
-        
+        <SearchResults movies={movies} />
     </main>
     )   
 }
