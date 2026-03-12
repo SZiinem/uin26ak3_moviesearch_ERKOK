@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react"
 import SearchResults from '../components/SearchResults'
+import '../style/form.scss'
+import '../style/layout.scss'
+
+
 export default function Home(){
 
     //useState for å huske hva brukeren skriver i input-feltet (search)
     const [search, setSearch] = useState()
 
     const [movies, setMovies] = useState([])
+
+    const [error, setError] = useState("")
 
     const baseUrl = `http://www.omdbapi.com/?s=${search}&apikey=`
     //henter api-key fra env filen.. den er "hemmelig", så vi kan ikke ha den som klartekst her!
@@ -43,9 +49,15 @@ export default function Home(){
     const handleSubmit = (e)=>{
         //håndtere eventet når vi søker, slik at siden ikke refresher seg og tømmer staten (det er default)
         e.preventDefault()
-        //fjerner verdien i boksen etter å ha trykket på søk..
-        e.target.reset()
-        getMovies(search);
+
+        if (search && search.length >= 3) {
+            getMovies(search);
+            setError(""); //tømmer feilmeldingen hvis søket er godkjent
+            e.target.reset(); //fjerner verdien i boksen etter å ha trykket på søk..
+        }
+        else {
+            setError("Søkeordet må være minst 3 tegn");
+        }
     }
 
     return (
@@ -58,6 +70,7 @@ export default function Home(){
             </label>
 
             <button>Søk</button>
+            {error && <p className="error-message">{error}</p>}
         </form>
         <SearchResults movies={movies} />
     </main>
