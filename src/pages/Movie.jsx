@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
+import '../style/moviepage.scss'
+import placeholderbilde from '../assets/placeholderbilde.png'
 
 export default function Movie(){
 
@@ -21,9 +23,12 @@ export default function Movie(){
 
     return(
         <section className="movie-details">
-            <h1>{movieInfo?.Title}</h1>
-            <p><strong>Utgitt: </strong>{movieInfo?.Year}</p>
-            <img src={movieInfo?.Poster} alt={movieInfo?.Title}/>
+            {/*<img src= {movieInfo?.Poster} alt={movieInfo?.Title}/>*/}
+            <img src={movie.Poster !== 'N/A' ? movie.Poster : placeholderbilde} alt={movie.Title} />
+            <section className="title-section">
+                <h1>{movieInfo?.Title}</h1>
+                <p><strong>Utgitt: </strong>{movieInfo?.Year}</p>
+            </section>
 
             <article className="extra-info">
                 <p>{movieInfo?.Plot}</p>
